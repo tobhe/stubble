@@ -14,18 +14,29 @@
 
 DECLARE_SBAT(SBAT_STUB_SECTION_TEXT);
 
+static bool parse_string(char16_t *p, const char16_t *opt) {
+	const size_t opt_len = strlen16(opt);
+        if (strncmp16(p, opt, opt_len) == 0 &&
+                      (p[opt_len] == ' ' ||
+                       p[opt_len] == '\0'))
+		return true;
+	return false;
+}
+
 static void parse_cmdline(char16_t *p) {
-
         assert(p);
-
         while (*p != '\0') {
-                const char16_t *debug = L"debug";
-                size_t debug_len = strlen16(debug);
-                if (strncmp16(p, debug, debug_len) == 0 &&
-                                (p[debug_len] == ' ' ||
-                                 p[debug_len] == '\0'))
+                const size_t debug_len = strlen16(L"debug");
+		if (parse_string(p, L"debug") == true)
                         log_isdebug = true;
 
+                if (strncmp16(p, L"stubble.dtb_override", strlen16(L"stubble.dtb_override")) == 0) {
+			p += strlen16(L"stubble.dtb_override");
+			if (parse_string(p, L"true") == true)
+                                dtb_override = true;
+			if (parse_string(p, L"false") == true)
+                                dtb_override = false;
+                }
                 p = strchr16(p, ' ');
                 if (p == NULL)
                         return;
